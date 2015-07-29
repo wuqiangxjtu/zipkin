@@ -21,7 +21,7 @@ import bintray.BintrayKeys._
 
 object Zipkin extends Build {
 
-  val zipkinVersion = "1.2.5"
+  // val zipkinVersion = "1.2.5"
 
   ///////////////////////
   // Build environment //
@@ -70,7 +70,7 @@ object Zipkin extends Build {
 
   def zipkinSettings = Seq(
     organization := "io.zipkin",
-    version := zipkinVersion,
+    // version := zipkinVersion,
     crossScalaVersions := Seq("2.10.5"),
     scalaVersion := "2.10.5",
     crossPaths := false,            /* Removes Scala version from artifact name */
