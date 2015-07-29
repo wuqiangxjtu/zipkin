@@ -1,6 +1,34 @@
-subprojects {
+plugins {
+    id 'com.jfrog.bintray' version '1.2'
+    id 'net.researchgate.release' version '2.1.2'
+}
+
+allprojects {
     apply plugin: 'java'
     apply plugin: 'scala'
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'net.researchgate.release'
+    apply plugin: 'com.jfrog.bintray'
+
+    release {
+        failOnCommitNeeded = false
+        failOnPublishNeeded = true
+        failOnSnapshotDependencies = true
+        failOnUnversionedFiles = false
+        failOnUpdateNeeded = true
+        revertOnFail = true
+
+        git {
+            requireBranch = 'gradle-bintray'
+            pushToRemote = 'origin'
+            pushToCurrentBranch = true
+        }
+    }
+
+}
+
+subprojects { subproject ->
 
     apply from: "$rootDir/gradle/dependencies.gradle"
     apply from: "$rootDir/gradle/scalatest.gradle"
@@ -28,7 +56,30 @@ subprojects {
         testCompile "org.scalatest:scalatest_${scalaInterfaceVersion}:2.2.5"
     }
     // SBT migration note: end of zipkinSettings
+
+    bintray {
+        // Read variables from travis encrypted config or local
+        user = System.getenv('BINTRAY_USER')
+        key = System.getenv('BINTRAY_KEY')
+
+        configurations = ['archives']
+        publish = true
+
+        pkg {
+            licenses = ['Apache-2.0']
+            repo = 'zipkin'
+            vcsUrl = 'https://github.com/openzipkin/zipkin.git'
+            name = "${subproject.name}"
+            version {
+                name = "${project.version}"
+                desc = 'Zipkin version ${project.version}'
+                released  = new Date()
+                vcsTag = "${project.version}"
+            }
+        }
+    }
 }
+
 
 // Quick hack to visualize inter-project dependencies
 task dependencyReport {
