@@ -1,31 +1,16 @@
 plugins {
     id 'com.jfrog.bintray' version '1.2'
-    id 'net.researchgate.release' version '2.1.2'
+    id 'ch.netzwerg.release' version '1.1.0'
 }
+
+apply plugin: 'ch.netzwerg.release'
 
 allprojects {
     apply plugin: 'java'
     apply plugin: 'scala'
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
-    apply plugin: 'net.researchgate.release'
     apply plugin: 'com.jfrog.bintray'
-
-    release {
-        failOnCommitNeeded = false
-        failOnPublishNeeded = true
-        failOnSnapshotDependencies = true
-        failOnUnversionedFiles = false
-        failOnUpdateNeeded = true
-        revertOnFail = true
-
-        git {
-            requireBranch = 'gradle-bintray'
-            pushToRemote = 'origin'
-            pushToCurrentBranch = true
-        }
-    }
-
 }
 
 subprojects { subproject ->
@@ -80,6 +65,12 @@ subprojects { subproject ->
     }
 }
 
+release {
+  dependsOn build // 'distZip' could e.g be used in combination with the 'application' plugin
+  push = true // 'true' would e.g. be useful when triggering the release task on a CI server
+  versionSuffix = '-DEV' // '.DEV' or '' (empty) could be useful alternatives
+  tagPrefix = 'v' // 'r' or '' (empty) could be useful alternatives
+}
 
 // Quick hack to visualize inter-project dependencies
 task dependencyReport {
