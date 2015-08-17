@@ -40,6 +40,9 @@ trait CassandraSpanStoreFactory {self: App =>
 
   val cassieMaxTraceCols = flag("zipkin.store.cassandra.maxTraceCols", Defaults.MaxTraceCols, "max number of spans to return from a query")
 
+  val cassandraUsername = flag("zipkin.store.cassandra.user", "", "the username for cassandra authentication")
+  val cassandraPassword = flag("zipkin.store.cassandra.pass", "", "the password for cassandra authentication")
+
   def newCassandraStore(stats: StatsReceiver = DefaultStatsReceiver.scope("CassandraSpanStore")): CassandraSpanStore = {
     val repository = new Repository(keyspace(), createClusterBuilder().build())
 
@@ -52,9 +55,15 @@ trait CassandraSpanStoreFactory {self: App =>
   }
 
   def createClusterBuilder(): Cluster.Builder = {
-    addContactPoint(Cluster.builder())
+    val builder = addContactPoint(Cluster.builder())
       .withRetryPolicy(ZipkinRetryPolicy.INSTANCE)
       .withLoadBalancingPolicy(new TokenAwarePolicy(new LatencyAwarePolicy.Builder(new RoundRobinPolicy()).build()))
+
+    if (!"".equals(cassandraUsername()) && !"".equals(cassandraPassword())) {
+      builder.withCredentials(cassandraUsername(), cassandraPassword())
+    } else {
+      builder
+    }
   }
 
   def addContactPoint(builder: Cluster.Builder): Cluster.Builder = {
