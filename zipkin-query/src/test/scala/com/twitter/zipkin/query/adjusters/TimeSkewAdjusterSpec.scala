@@ -316,4 +316,38 @@ class TimeSkewAdjusterTest extends FunSuite {
     // tflock must receive the request before it send a request to flock
     assert(flockCs.timestamp > tflockSr.timestamp)
   }
+
+
+  test("adjust when any child annotation is before its parent") {
+    val fleetLocationIngestEndpoint = Endpoint(2130706433, -3751, "fleet-location-ingest")
+
+    val fleetLocationUpdaterEndpoint = Endpoint(2130706433, -3002, "fleet-location-updater")
+
+    // The parent's clock is faster than the child
+    val fleetLocationIngest = Span(2365042075502852600L, "http/api/locations", -163546325293442500L, None, List(
+      Annotation(1442522478749000L, "acquire", Some(fleetLocationIngestEndpoint)),
+      Annotation(1442522478751000L, "release", Some(fleetLocationIngestEndpoint))
+    ), Nil)
+
+    val fleetLocationUpdater = Span(2365042075502852600L, "message/input", 6030055916214742000L, Some(-163546325293442500L), List(
+      Annotation(1442522478687000L, "acquire", Some(fleetLocationUpdaterEndpoint)),
+      Annotation(1442522478689000L, "cs", Some(fleetLocationUpdaterEndpoint)),
+      Annotation(1442522478906000L, "cr", Some(fleetLocationUpdaterEndpoint)),
+      Annotation(1442522478906000L, "release", Some(fleetLocationUpdaterEndpoint))
+    ), Nil)
+
+    val trace = new Trace(Seq(fleetLocationIngest, fleetLocationUpdater))
+    val adjusted = adjuster.adjust(trace)
+
+    // let's see how we did
+    val minimumTimestampOfParent = adjusted.getSpanById(fleetLocationIngest.id)
+      .map(span => span.annotations)
+      .map(annotations => annotations.map(a => a.timestamp).min).min
+
+    val minimumTimestampOfChild = adjusted.getSpanById(fleetLocationUpdater.id)
+      .map(span => span.annotations)
+      .map(annotations => annotations.map(a => a.timestamp).min).min
+
+    assert(minimumTimestampOfParent <= minimumTimestampOfChild)
+  }
 }

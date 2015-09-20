@@ -233,7 +233,7 @@ class TimeSkewAdjuster extends Adjuster {
       val latency = (clientDuration - serverDuration) / 2
       (serverRecv - latency - clientSend) match {
         case 0 => None
-        case _ => Some(ClockSkew(endpoint, serverRecv - latency - clientSend))
+        case skew => Some(ClockSkew(endpoint, skew))
       }
     }
   }
