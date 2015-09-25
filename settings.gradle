@@ -48,6 +48,7 @@ include 'zipkin-zookeeper'
 include 'zipkin-cassandra'
 include 'zipkin-anormdb'
 include 'zipkin-redis'
+include 'zipkin-hunter'
 
 ////////////
 // Thrift //

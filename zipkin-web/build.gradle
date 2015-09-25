@@ -4,6 +4,7 @@ mainClassName = 'com.twitter.zipkin.web.Main'
 dependencies {
     compile project(':zipkin-common')
     compile project(':zipkin-scrooge')
+    compile project(':zipkin-hunter')
 
     compile "com.twitter.common.zookeeper:server-set:${commonVersions.zookeeper.serverSet}"
     compile "com.twitter:algebird-core_${scalaInterfaceVersion}:${commonVersions.algebird}"

@@ -4,8 +4,10 @@ plugins {
 }
 
 apply plugin: 'ch.netzwerg.release'
+apply plugin: 'eclipse'
 
 allprojects {
+    apply plugin: 'eclipse'
     apply plugin: 'java'
     apply plugin: 'scala'
     apply plugin: 'maven'
@@ -25,6 +27,7 @@ subprojects { subproject ->
     repositories {
         jcenter()
         maven { url 'http://repo.typesafe.com/typesafe/releases/' }
+	maven { url 'http://mirrors.hypo.cn/twttr-maven/'}
         maven { url 'https://maven.twttr.com/' }
     }
 
