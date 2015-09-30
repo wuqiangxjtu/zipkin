@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>table</title>
+	<style>
+		table.gridtable {
+			font-family: verdana,arial,sans-serif;
+			font-size:11px;
+			color:#333333;
+			border-width: 1px;
+			border-color: #666666;
+			border-collapse: collapse;
+		}
+		table.gridtable th {
+			border-width: 1px;
+			padding: 8px;
+			border-style: solid;
+			border-color: #666666;
+			background-color: #dedede;
+		}
+		table.gridtable td {
+			border-width: 1px;
+			padding: 8px;
+			border-style: solid;
+			border-color: #666666;
+			background-color: #ffffff;
+		}
+	</style>
+</head>
+<body>
+	<table class="gridtable">
+		<tr>
+			<th>Service名称</th>
+			<th>最大时长(ms)</th>
+			<th>最小时长(ms)</th>
+			<th>平均时长(ms)</th>
+		</tr>
+		{{#services}}
+		<tr>
+			<td>{{name}}</td>
+			<td>{{max}}</td>
+			<td>{{min}}</td>
+			<td>{{avg}}</td>
+		</tr>
+		{{/services}}
+	</table>
+</body>
+</html>
+
+	
+	
+	
+	
