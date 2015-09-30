@@ -1,9 +1,0 @@
-
-dependencies { 
-    compile project(':zipkin-redis')
-    compile project(':zipkin-query')
-
-    compile "com.twitter:twitter-server_${scalaInterfaceVersion}:${commonVersions.twitterServer}"
-    compile "com.twitter:finagle-zipkin_${scalaInterfaceVersion}:${commonVersions.finagle}"
-    compile "com.twitter:finagle-stats_${scalaInterfaceVersion}:${commonVersions.finagle}"
-}
