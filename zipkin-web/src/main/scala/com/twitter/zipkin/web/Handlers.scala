@@ -306,17 +306,23 @@ class Handlers(jsonGenerator: ZipkinJson, mustacheGenerator: ZipkinMustache, que
             Future(MustacheRenderer("v2/aggregate.mustache", data))
         }
 
-    val hunterService = new HunterService("172.16.190.141:6379")
+    /**
+     * hunter start
+     */
+    val hunterService = new HunterService("172.16.190.141:6379") //ip:port
     def handleDurations(client: ZipkinQuery[Future]): Service[Request, MustacheRenderer] =
         Service.mk[Request, MustacheRenderer] { req =>
-            val endTs = 1443258043189000L
-            val limit = 100
+            val endTs = System.currentTimeMillis() * 1000L //end time
+            val limit = 500                                //limit
             var data = Map[String,Object]("services"-> hunterService.getServiceNames().map { name =>
                 hunterService.getServicesTimeStats(name, endTs, limit)        
             })
             
             Future(MustacheRenderer("v2/durations.mustache", data))
         }
+    /**
+     * hunter end
+     */
 
     private[this] def getExistingTracedId(
         client: ZipkinQuery[Future],
