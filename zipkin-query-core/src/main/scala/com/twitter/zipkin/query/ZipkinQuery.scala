@@ -17,49 +17,48 @@
 package com.twitter.zipkin.query
 
 import com.twitter.zipkin.query.adjusters.Adjuster
-import com.twitter.finagle.builder.{ServerBuilder, Server}
-import com.twitter.finagle.stats.{NullStatsReceiver, StatsReceiver}
+import com.twitter.finagle.builder.{ ServerBuilder, Server }
+import com.twitter.finagle.stats.{ NullStatsReceiver, StatsReceiver }
 import com.twitter.finagle.thrift.ThriftServerFramedCodec
-import com.twitter.finagle.tracing.{NullTracer, Tracer}
+import com.twitter.finagle.tracing.{ NullTracer, Tracer }
 import com.twitter.logging.Logger
-import com.twitter.ostrich.admin.{ServiceTracker, Service}
+import com.twitter.ostrich.admin.{ ServiceTracker, Service }
 import com.twitter.zipkin.thriftscala
-import com.twitter.zipkin.storage.{Aggregates, Index, Storage}
+import com.twitter.zipkin.storage.{ Aggregates, Index, Storage }
 import java.net.InetSocketAddress
 import org.apache.thrift.protocol.TBinaryProtocol
 
 class ZipkinQuery(
-  serverAddress: InetSocketAddress,
-  storage: Storage,
-  index: Index,
-  aggregates: Aggregates,
-  adjusterMap: Map[thriftscala.Adjust, Adjuster] = Map.empty,
-  statsReceiver: StatsReceiver = NullStatsReceiver,
-  tracer: Tracer = NullTracer
-) extends Service {
+        serverAddress: InetSocketAddress,
+        storage: Storage,
+        index: Index,
+        aggregates: Aggregates,
+        adjusterMap: Map[thriftscala.Adjust, Adjuster] = Map.empty,
+        statsReceiver: StatsReceiver = NullStatsReceiver,
+        tracer: Tracer = NullTracer) extends Service {
 
-  val log = Logger.get(getClass.getName)
-  var thriftServer: Server = null
+    val log = Logger.get(getClass.getName)
+    var thriftServer: Server = null
 
-  def start() {
-    log.info("Starting query thrift service on addr " + serverAddress)
+    def start() {
+        log.info("Starting query thrift service on addr " + serverAddress)
 
-    val queryService = new QueryService(storage, index, aggregates, adjusterMap, statsReceiver)
-    queryService.start()
-    ServiceTracker.register(queryService)
+        val queryService = new QueryService(storage, index, aggregates, adjusterMap, statsReceiver)
+        queryService.start()
+        ServiceTracker.register(queryService)
 
-    thriftServer = ServerBuilder()
-      .codec(ThriftServerFramedCodec())
-      .bindTo(serverAddress)
-      .name("ZipkinQuery")
-      .tracer(tracer)
-      .build(new thriftscala.ZipkinQuery.FinagledService(queryService, new TBinaryProtocol.Factory()))
-  }
+        thriftServer = ServerBuilder()
+            .codec(ThriftServerFramedCodec())
+            .bindTo(serverAddress)
+            .name("ZipkinQuery")
+            .tracer(tracer)
+            .build(new thriftscala.ZipkinQuery.FinagledService(queryService, new TBinaryProtocol.Factory()))
+    }
 
-  def shutdown() {
-    log.info("Shutting down query thrift service.")
-    thriftServer.close()
-  }
+    def shutdown() {
+        log.info("Shutting down query thrift service.")
+        thriftServer.close()
+    }
 }
 
 

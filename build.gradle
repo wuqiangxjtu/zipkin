@@ -27,7 +27,7 @@ subprojects { subproject ->
     repositories {
         jcenter()
         maven { url 'http://repo.typesafe.com/typesafe/releases/' }
-	maven { url 'http://mirrors.hypo.cn/twttr-maven/'}
+	    maven { url 'http://mirrors.hypo.cn/twttr-maven/'}
         maven { url 'https://maven.twttr.com/' }
     }
 
