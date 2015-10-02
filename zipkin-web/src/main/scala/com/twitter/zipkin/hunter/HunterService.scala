@@ -48,74 +48,57 @@ class HunterService(address: String) {
     /**
      * 找出traceIds对应的时长，traceIds通常属于一个service，这样就可以找到一个service下所有trace的时长
      */
-    def getTracesDuration(traceIds: Seq[IndexedTraceId]): Future[Seq[TraceIdDuration]] = {
+    def getTracesDuration(traceIds: Future[Seq[IndexedTraceId]]): Future[Seq[TraceIdDuration]] = {
         spanStore.getTracesDuration(
-            traceIds.map {
+            Await.result(traceIds).map {
                 x => x.traceId
             })
     }
+    
+    /**
+     * 找出一批trace对应的最大的Span的数量
+     */
+    /*
+    def getTracesMaxSpan(traceIds: Future[Seq[IndexedTraceId]]): Future[Long] = {
+       
+    }
+    *
+    */
 
     /**
      * 求一批trace的平均时长
      */
-    def getTracesDurationAverage(traceIds: Seq[IndexedTraceId]): Long = {
-        val traceDurations = Await.result(getTracesDuration(traceIds))
-        val sum = traceDurations.map {
+    def getTracesDurationAverage(traceIds: Future[Seq[IndexedTraceId]]): Long = {
+        val traceDurations = getTracesDuration(traceIds)
+
+        val drua = Await.result(traceDurations)
+        val sum = drua.map {
             x => x.duration
         }.sum
-        val size = traceDurations.size
+        val size = drua.size
         sum / size
+
     }
 
-    def getServiceMaxDuration(traceIds: Seq[IndexedTraceId]): Long = {
-        Await.result(getTracesDuration(traceIds)).last.duration
+    case class MaxAndMinDuration(max: Long, min: Long)
+
+    def getServiceMaxAndMinDuration(traceIds: Future[Seq[IndexedTraceId]]): MaxAndMinDuration = {
+        val sortedDuration = Await.result(getTracesDuration(traceIds)).sortWith { (id1, id2) => id1.duration > id2.duration }
+        MaxAndMinDuration(sortedDuration.head.duration, sortedDuration.last.duration)
     }
 
-    def getServiceMinDuration(traceIds: Seq[IndexedTraceId]): Long = {
-        Await.result(getTracesDuration(traceIds)).head.duration
-    }
+    case class StatVo(name:String, max:Long, min:Long, avg:Long)
+    def getServicesTimeStats(name: String, endTs: Long, limit: Int): Future[StatVo] = {
+        Future {
+            val traceIds = getTraceIdsByName(name, endTs, limit)
 
-    def getServicesTimeStats1(endTs: Long, limit: Int): Map[String, Object] = {
-        //        var data = Map[String, Map[String, Object]]()
-        var data = Map[String, Object]()
-        val services = getServiceNames
-        services.map { serviceName =>
-            //println(serviceName)
-            val traceIds = Await.result(getTraceIdsByName(serviceName, endTs, limit))
-            var max = 0L
-            var min = 0L
-            var average = 0L
-            if (traceIds.size > 0) {
-                max = getServiceMaxDuration(traceIds)
-                min = getServiceMinDuration(traceIds)
-                average = getTracesDurationAverage(traceIds)
-            }
-            val st = Map(
-                ("max" -> max),
-                ("min" -> min),
-                ("avg" -> average))
-            data = Map("name" -> max.toString())
+            val maxmin = getServiceMaxAndMinDuration(traceIds)
+            val max = maxmin.max / 1000
+            val min = maxmin.min / 1000
+            val average = getTracesDurationAverage(traceIds) / 1000
 
+            StatVo(name,max,min,average)    
         }
-        println(data)
-        data
-    }
-
-    def getServicesTimeStats(name: String, endTs: Long, limit: Int): Map[String, Object] = {
-        val traceIds = Await.result(getTraceIdsByName(name, endTs, limit))
-        var max = 0L
-        var min = 0L
-        var average = 0L
-        if (traceIds.size > 0) {
-            max = getServiceMaxDuration(traceIds)/1000
-            min = getServiceMinDuration(traceIds)/1000
-            average = getTracesDurationAverage(traceIds)/1000
-        }
-        Map(("name"-> name),
-            ("max" -> max.toString()),
-            ("min" -> min.toString()),
-            ("avg" -> average.toString()))
- 
     }
 
 }

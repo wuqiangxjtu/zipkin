@@ -15,6 +15,7 @@ import com.twitter.zipkin.thriftscala.{ Adjust, ZipkinQuery }
 import java.io.{ File, FileInputStream, InputStream }
 import org.apache.commons.io.IOUtils
 import scala.annotation.tailrec
+import com.twitter.util.Await
 import com.twitter.zipkin.hunter.HunterService
 
 class Handlers(jsonGenerator: ZipkinJson, mustacheGenerator: ZipkinMustache, queryExtractor: QueryExtractor) {
@@ -313,11 +314,13 @@ class Handlers(jsonGenerator: ZipkinJson, mustacheGenerator: ZipkinMustache, que
     def handleDurations(client: ZipkinQuery[Future]): Service[Request, MustacheRenderer] =
         Service.mk[Request, MustacheRenderer] { req =>
             val endTs = System.currentTimeMillis() * 1000L //end time
-            val limit = 500                                //limit
-            var data = Map[String,Object]("services"-> hunterService.getServiceNames().map { name =>
-                hunterService.getServicesTimeStats(name, endTs, limit)        
-            })
+            val limit = 10                                //limit
             
+            var data = Map[String,Object]("services"->hunterService.getServiceNames().map { name =>
+                    Await.result(hunterService.getServicesTimeStats(name, endTs, limit))
+            }.toList.sortWith((vo1,vo2) => vo1.max > vo2.max))
+           
+           
             Future(MustacheRenderer("v2/durations.mustache", data))
         }
     /**
