@@ -16,7 +16,7 @@ import com.twitter.util.Duration
 /**
  * @author wuqiang
  */
-class HunterService(address: String) {
+class HunterService(val address: String) {
 
     val _client = Client(address)
 
@@ -35,7 +35,7 @@ class HunterService(address: String) {
      * 获取所有的service name
      */
     def getServiceNames(): Set[String] = {
-        redisIndex.getServiceNames()
+        Await.result(redisIndex.getServiceNames)
     }
 
     /**

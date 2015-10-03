@@ -316,7 +316,7 @@ class Handlers(jsonGenerator: ZipkinJson, mustacheGenerator: ZipkinMustache, que
             val endTs = System.currentTimeMillis() * 1000L //end time
             val limit = 10                                //limit
             
-            var data = Map[String,Object]("services"->hunterService.getServiceNames().map { name =>
+            var data = Map[String,Object]("services"->hunterService.getServiceNames.par.map { name =>
                     Await.result(hunterService.getServicesTimeStats(name, endTs, limit))
             }.toList.sortWith((vo1,vo2) => vo1.max > vo2.max))
            
