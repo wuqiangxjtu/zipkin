@@ -1,6 +1,13 @@
 apply plugin: 'application'
 mainClassName = 'com.twitter.zipkin.web.Main'
 
+task webrun(type:JavaExec) {
+    main = mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+    args "-zipkin.web.resourcesRoot=${projectDir}/src/main/resources"
+    workingDir project.buildDir
+}
+
 dependencies {
     compile project(':zipkin-common')
     compile project(':zipkin-scrooge')
