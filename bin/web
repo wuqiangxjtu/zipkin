@@ -1,1 +1,1 @@
-./gradlew :zipkin-web:webrun
+./gradlew :zipkin-web:webrun -x test
