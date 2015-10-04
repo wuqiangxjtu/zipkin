@@ -1,1 +1,1 @@
-../gradlew queryrun
+./gradlew :zipkin-query-service:queryrun

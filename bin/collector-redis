@@ -1,1 +1,1 @@
-../gradlew collectrun
+./gradlew :zipkin-collector-service:collectrun
