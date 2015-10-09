@@ -1,1 +1,4 @@
-./gradlew :zipkin-query-service:queryrun
+#!/bin/sh
+cd `dirname $0`
+BIN_DIR=`pwd`
+${BIN_DIR}/gradlew :zipkin-query-service:queryrun

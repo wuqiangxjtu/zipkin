@@ -1,1 +1,4 @@
-./gradlew :zipkin-web:webrun -x test
+#!/bin/sh
+cd `dirname $0`
+BIN_DIR=`pwd`
+${BIN_DIR}/gradlew :zipkin-web:webrun -x test

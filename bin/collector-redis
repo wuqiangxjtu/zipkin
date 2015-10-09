@@ -1,1 +1,4 @@
-./gradlew :zipkin-collector-service:collectrun
+#!/bin/sh
+cd `dirname $0`
+BIN_DIR=`pwd`
+${BIN_DIR}/gradlew :zipkin-collector-service:collectrun
