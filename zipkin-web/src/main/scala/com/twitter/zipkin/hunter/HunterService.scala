@@ -76,15 +76,21 @@ class HunterService(val address: String) {
             x => x.duration
         }.sum
         val size = drua.size
-        sum / size
-
+        size match {
+            case 0 => 0
+            case _ => sum / size
+        }
     }
 
     case class MaxAndMinDuration(max: Long, min: Long)
 
     def getServiceMaxAndMinDuration(traceIds: Future[Seq[IndexedTraceId]]): MaxAndMinDuration = {
         val sortedDuration = Await.result(getTracesDuration(traceIds)).sortWith { (id1, id2) => id1.duration > id2.duration }
-        MaxAndMinDuration(sortedDuration.head.duration, sortedDuration.last.duration)
+        sortedDuration.size match {
+            case 0 => MaxAndMinDuration(0, 0)
+            case _ => MaxAndMinDuration(sortedDuration.head.duration, sortedDuration.last.duration)
+        }
+        
     }
 
     case class StatVo(name:String, max:Long, min:Long, avg:Long)
