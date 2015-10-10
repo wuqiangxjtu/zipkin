@@ -310,7 +310,7 @@ class Handlers(jsonGenerator: ZipkinJson, mustacheGenerator: ZipkinMustache, que
     /**
      * hunter start
      */
-    val hunterService = new HunterService("172.16.190.141:6379") //ip:port
+    val hunterService = new HunterService("127.0.0.1:6379") //ip:port  
     def handleDurations(client: ZipkinQuery[Future]): Service[Request, MustacheRenderer] =
         Service.mk[Request, MustacheRenderer] { req =>
             val endTs = System.currentTimeMillis() * 1000L //end time
