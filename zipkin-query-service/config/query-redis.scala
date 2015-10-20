@@ -18,8 +18,9 @@ import com.twitter.zipkin.redis
 import com.twitter.zipkin.storage.Store
 
 val storeBuilder = Store.Builder(
-  redis.StorageBuilder("0.0.0.0", 6379),
-  redis.IndexBuilder("0.0.0.0", 6379)
-)
+  redis.StorageBuilder("0.0.0.0", 6379, authPassword=Some("pw")),
+  redis.IndexBuilder("0.0.0.0", 6379, authPassword=Some("pw"))
+) 
+
 
 QueryServiceBuilder(storeBuilder)
