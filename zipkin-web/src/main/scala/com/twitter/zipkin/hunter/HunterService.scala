@@ -12,23 +12,26 @@ import scala.collection.mutable
 import com.twitter.conversions.time.intToTimeableNumber
 import com.twitter.finagle.redis.Client
 import com.twitter.util.Duration
+import com.twitter.finagle.redis.util.StringToChannelBuffer
 
 /**
  * @author wuqiang
  */
-class HunterService(val address: String) {
-
-    val _client = Client(address)
-
-    val redisIndex = new RedisIndex {
+object HunterService {
+    var _client = Client(HunterConstants.redis)
+    val authenticate = HunterConstants.authPassword.map(p => _client.auth(StringToChannelBuffer(p))) getOrElse Future.Done
+    Await.result(authenticate,10.seconds)
+    
+    var redisIndex = new RedisIndex {
         val database = _client
         val ttl = Some(7.days)
     }
-
+   
     var redisStorage = new RedisStorage {
         val database = _client
         val ttl = Some(7.days)
     }
+
     val spanStore = new RedisSpanStore(redisIndex, redisStorage)
 
     /**
@@ -54,7 +57,7 @@ class HunterService(val address: String) {
                 x => x.traceId
             })
     }
-    
+
     /**
      * 找出一批trace对应的最大的Span的数量
      */
@@ -90,10 +93,10 @@ class HunterService(val address: String) {
             case 0 => MaxAndMinDuration(0, 0)
             case _ => MaxAndMinDuration(sortedDuration.head.duration, sortedDuration.last.duration)
         }
-        
+
     }
 
-    case class StatVo(name:String, max:Long, min:Long, avg:Long)
+    case class StatVo(name: String, max: Long, min: Long, avg: Long)
     def getServicesTimeStats(name: String, endTs: Long, limit: Int): Future[StatVo] = {
         Future {
             val traceIds = getTraceIdsByName(name, endTs, limit)
@@ -103,8 +106,13 @@ class HunterService(val address: String) {
             val min = maxmin.min / 1000
             val average = getTracesDurationAverage(traceIds) / 1000
 
-            StatVo(name,max,min,average)    
+            StatVo(name, max, min, average)
         }
     }
 
+}
+
+object HunterConstants {
+    var redis = "127.0.0.1:6379"
+    var authPassword:Option[String] = None
 }

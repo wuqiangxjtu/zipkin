@@ -17,6 +17,7 @@ import org.apache.commons.io.IOUtils
 import scala.annotation.tailrec
 import com.twitter.util.Await
 import com.twitter.zipkin.hunter.HunterService
+import com.twitter.zipkin.hunter.HunterConstants
 
 class Handlers(jsonGenerator: ZipkinJson, mustacheGenerator: ZipkinMustache, queryExtractor: QueryExtractor) {
     import Util._
@@ -310,14 +311,16 @@ class Handlers(jsonGenerator: ZipkinJson, mustacheGenerator: ZipkinMustache, que
     /**
      * hunter start
      */
-    val hunterService = new HunterService("127.0.0.1:6379") //ip:port  
-    def handleDurations(client: ZipkinQuery[Future]): Service[Request, MustacheRenderer] =
+    //ip:port  
+//    HunterConstants.redis = "127.0.0.1:6379"
+    HunterConstants.authPassword = Some("pw")
+    def handleDurations(): Service[Request, MustacheRenderer] =
         Service.mk[Request, MustacheRenderer] { req =>
             val endTs = System.currentTimeMillis() * 1000L //end time
             val limit = 10                                //limit
             
-            var data = Map[String,Object]("services"->hunterService.getServiceNames.par.map { name =>
-                    Await.result(hunterService.getServicesTimeStats(name, endTs, limit))
+            var data = Map[String,Object]("services"-> HunterService.getServiceNames.par.map { name =>
+                    Await.result(HunterService.getServicesTimeStats(name, endTs, limit))
             }.toList.sortWith((vo1,vo2) => vo1.max > vo2.max))
            
            
